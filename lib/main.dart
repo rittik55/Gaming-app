@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-bool isFirebaseReady = false;
-
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -14,17 +9,11 @@ void main() async {
       statusBarIconBrightness: Brightness.light,
     ),
   );
-  try {
-    await Firebase.initializeApp();
-    isFirebaseReady = true;
-  } catch (e) {
-    debugPrint("Firebase state: $e");
-  }
-  runApp(const ZGodEsportsApp());
+  runApp(const EsportsTournamentApp());
 }
 
-class ZGodEsportsApp extends StatelessWidget {
-  const ZGodEsportsApp({super.key});
+class EsportsTournamentApp extends StatelessWidget {
+  const EsportsTournamentApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,55 +21,43 @@ class ZGodEsportsApp extends StatelessWidget {
       title: 'Z-GOD ESPORTS',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0A0B14),
+        scaffoldBackgroundColor: const Color(0xFF090A10),
         primaryColor: const Color(0xFFFF0055),
         colorScheme: const ColorScheme.dark(
           primary: Color(0xFFFF0055),
           secondary: Color(0xFF00E5FF),
-          surface: Color(0xFF131526),
+          surface: Color(0xFF121422),
         ),
       ),
-      home: const AuthScreen(),
+      home: const EsportsLoginScreen(),
     );
   }
 }
 
-/* ==========================================
-   1. AUTH SCREEN (100% WORKING LOGIN)
-   ========================================== */
-class AuthScreen extends StatefulWidget {
-  const AuthScreen({super.key});
+/* ==========================================================================
+   1. LOGIN SCREEN (ESPORTS STYLE ENTRY)
+   ========================================================================== */
+class EsportsLoginScreen extends StatefulWidget {
+  const EsportsLoginScreen({super.key});
 
   @override
-  State<AuthScreen> createState() => _AuthScreenState();
+  State<EsportsLoginScreen> createState() => _EsportsLoginScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> {
-  final _nameController = TextEditingController();
-  bool _loading = false;
+class _EsportsLoginScreenState extends State<EsportsLoginScreen> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _uidController = TextEditingController();
 
-  Future<void> _login(String defaultName) async {
-    setState(() => _loading = true);
-    String playerName = _nameController.text.trim();
-    if (playerName.isEmpty) playerName = defaultName;
-
-    if (isFirebaseReady) {
-      try {
-        await FirebaseAuth.instance.signInAnonymously();
-      } catch (e) {
-        debugPrint("Auth bypass note: $e");
-      }
-    }
-
-    if (mounted) {
-      setState(() => _loading = false);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MainNavigationScreen(userName: playerName),
+  void _proceedToApp(String gamerTag, String gameUid) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MainNavigationScreen(
+          playerName: gamerTag.isEmpty ? 'Z-GOD WARRIOR' : gamerTag,
+          playerUid: gameUid.isEmpty ? '89402102' : gameUid,
         ),
-      );
-    }
+      ),
+    );
   }
 
   @override
@@ -88,35 +65,35 @@ class _AuthScreenState extends State<AuthScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Cyberpunk glowing accents
+          // Background Glowing Circles
           Positioned(
-            top: -60,
-            right: -60,
+            top: -50,
+            right: -50,
             child: Container(
               width: 220,
               height: 220,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFFF0055).withOpacity(0.18),
+                color: const Color(0xFFFF0055).withOpacity(0.2),
               ),
             ),
           ),
           Positioned(
-            bottom: -80,
-            left: -80,
+            bottom: -60,
+            left: -60,
             child: Container(
-              width: 250,
-              height: 250,
+              width: 240,
+              height: 240,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF00E5FF).withOpacity(0.12),
+                color: const Color(0xFF00E5FF).withOpacity(0.15),
               ),
             ),
           ),
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 28),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -126,8 +103,6 @@ class _AuthScreenState extends State<AuthScreen> {
                         shape: BoxShape.circle,
                         gradient: const LinearGradient(
                           colors: [Color(0xFFFF0055), Color(0xFFFF5E00)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
                         ),
                         boxShadow: [
                           BoxShadow(
@@ -137,110 +112,83 @@ class _AuthScreenState extends State<AuthScreen> {
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.sports_esports, size: 65, color: Colors.white),
+                      child: const Icon(Icons.sports_esports_rounded, size: 65, color: Colors.white),
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 20),
                     const Text(
-                      'Z-GOD GAMING',
+                      'Z-GOD ESPORTS',
                       style: TextStyle(
-                        fontSize: 34,
+                        fontSize: 32,
                         fontWeight: FontWeight.w900,
-                        letterSpacing: 3,
+                        letterSpacing: 2.5,
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     const Text(
-                      'ESPORTS TOURNAMENTS & SCRIMS',
+                      'TOURNAMENTS & SCRIMS ARENA',
                       style: TextStyle(
                         color: Color(0xFF00E5FF),
                         fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 2,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.5,
                       ),
                     ),
-                    const SizedBox(height: 40),
-                    // Nickname Input Box
+                    const SizedBox(height: 36),
                     TextField(
                       controller: _nameController,
                       style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: const Color(0xFF131526),
-                        hintText: 'Enter In-Game Nickname (Optional)',
-                        hintStyle: const TextStyle(color: Colors.white38, fontSize: 14),
-                        prefixIcon: const Icon(Icons.person_pin, color: Color(0xFFFF0055)),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 18),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: Color(0xFFFF0055), width: 1.5),
-                        ),
+                        hintText: 'Enter In-Game Name (IGN)',
+                        hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+                        prefixIcon: const Icon(Icons.person, color: Color(0xFFFF0055)),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                       ),
                     ),
-                    const SizedBox(height: 18),
-                    if (_loading)
-                      const CircularProgressIndicator(color: Color(0xFFFF0055))
-                    else ...[
-                      // Quick Instant Enter
-                      Container(
-                        width: double.infinity,
-                        height: 54,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFFF0055), Color(0xFFFF3366)],
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFFF0055).withOpacity(0.35),
-                              blurRadius: 18,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: ElevatedButton(
-                          onPressed: () => _login('Z-GOD Pro Gamer'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(Icons.bolt, color: Colors.white),
-                              SizedBox(width: 8),
-                              Text(
-                                'ENTER WARZONE',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 1.5),
-                              ),
-                            ],
-                          ),
-                        ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _uidController,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFF131526),
+                        hintText: 'Game UID (e.g. 59281044)',
+                        hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+                        prefixIcon: const Icon(Icons.numbers, color: Color(0xFF00E5FF)),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                       ),
-                      const SizedBox(height: 14),
-                      // Guest Mode
-                      OutlinedButton(
-                        onPressed: () => _login('Guest Sniper'),
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 52),
-                          side: const BorderSide(color: Color(0xFF00E5FF), width: 1.2),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                        child: const Text(
-                          'CONTINUE AS GUEST',
-                          style: TextStyle(color: Color(0xFF00E5FF), fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 1.2),
-                        ),
+                    ),
+                    const SizedBox(height: 22),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF0055),
+                        minimumSize: const Size(double.infinity, 52),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        elevation: 8,
                       ),
-                    ],
+                      onPressed: () => _proceedToApp(_nameController.text.trim(), _uidController.text.trim()),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.bolt, color: Colors.white),
+                          SizedBox(width: 8),
+                          Text('LOGIN & ENTER ARENA', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: 1)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 50),
+                        side: const BorderSide(color: Color(0xFF00E5FF), width: 1.2),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      onPressed: () => _proceedToApp('GUEST PLAYER', '99882211'),
+                      child: const Text('PLAY AS GUEST', style: TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.w900, letterSpacing: 1.2)),
+                    ),
                   ],
                 ),
               ),
@@ -252,12 +200,14 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 }
 
-/* ==========================================
-   2. MAIN NAVIGATION (HIGH-TECH DOCK)
-   ========================================== */
+/* ==========================================================================
+   2. MAIN NAVIGATION (ROOTER & BOOYAH DASHBOARD)
+   ========================================================================== */
 class MainNavigationScreen extends StatefulWidget {
-  final String userName;
-  const MainNavigationScreen({super.key, required this.userName});
+  final String playerName;
+  final String playerUid;
+
+  const MainNavigationScreen({super.key, required this.playerName, required this.playerUid});
 
   @override
   State<MainNavigationScreen> createState() => _MainNavigationScreenState();
@@ -268,16 +218,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final pages = [
-      const EsportsRoomScreen(),
-      const TournamentFeedScreen(),
-      EsportsProfileScreen(userName: widget.userName),
+    final screens = [
+      TournamentHomeScreen(playerName: widget.playerName, playerUid: widget.playerUid),
+      const MyMatchesScreen(),
+      WalletProfileScreen(playerName: widget.playerName, playerUid: widget.playerUid),
     ];
 
     return Scaffold(
-      body: pages[_currentIndex],
+      body: screens[_currentIndex],
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           color: const Color(0xFF0E101D),
           border: Border(top: BorderSide(color: Colors.white.withOpacity(0.06), width: 1)),
@@ -289,12 +238,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           elevation: 0,
           selectedItemColor: const Color(0xFFFF0055),
           unselectedItemColor: Colors.white38,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1),
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.8),
           unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11),
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.sports_esports_rounded), label: 'SCRIMS & ROOMS'),
-            BottomNavigationBarItem(icon: Icon(Icons.military_tech_rounded), label: 'TOURNAMENTS'),
-            BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'PROFILE'),
+            BottomNavigationBarItem(icon: Icon(Icons.sports_esports_rounded), label: 'TOURNAMENTS'),
+            BottomNavigationBarItem(icon: Icon(Icons.bookmark_added_rounded), label: 'MY MATCHES'),
+            BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet_rounded), label: 'WALLET & ID'),
           ],
         ),
       ),
@@ -302,60 +251,81 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 }
 
-/* ==========================================
-   3. ESPORTS ROOMS SCREEN
-   ========================================== */
-class EsportsRoomScreen extends StatefulWidget {
-  const EsportsRoomScreen({super.key});
+/* ==========================================================================
+   3. TOURNAMENT HOME SCREEN
+   ========================================================================== */
+class TournamentHomeScreen extends StatefulWidget {
+  final String playerName;
+  final String playerUid;
+
+  const TournamentHomeScreen({super.key, required this.playerName, required this.playerUid});
 
   @override
-  State<EsportsRoomScreen> createState() => _EsportsRoomScreenState();
+  State<TournamentHomeScreen> createState() => _TournamentHomeScreenState();
 }
 
-class _EsportsRoomScreenState extends State<EsportsRoomScreen> {
-  final List<Map<String, dynamic>> _rooms = [
+class _TournamentHomeScreenState extends State<TournamentHomeScreen> {
+  String _selectedGame = 'FREE FIRE';
+
+  final List<Map<String, dynamic>> _matches = [
     {
-      'title': '4v4 Clash Squad Grand Scrim',
-      'id': '8849102',
-      'pass': '1234',
+      'id': '101',
+      'title': 'FREE FIRE MAX: 4v4 CLASH SQUAD RUSH',
+      'game': 'FREE FIRE',
+      'time': 'TODAY, 09:30 PM',
       'map': 'Bermuda',
-      'mode': 'CLASH SQUAD',
-      'prize': '500 Diamonds',
-      'slots': '7/8',
-      'isFull': false,
+      'type': 'SQUAD (4v4)',
+      'entry': 'FREE',
+      'prize': '₹500 / 600 💎',
+      'perKill': '₹10',
+      'totalSlots': 8,
+      'joinedSlots': 7,
+      'roomId': '8849201',
+      'roomPass': '7788',
+      'isJoined': false,
     },
     {
-      'title': 'Full Map Battle Royale Ranked',
-      'id': '9920145',
-      'pass': '0000',
+      'id': '102',
+      'title': 'BATTLE ROYALE: GRANDMASTER SURVIVAL',
+      'game': 'FREE FIRE',
+      'time': 'TODAY, 10:30 PM',
       'map': 'Purgatory',
-      'mode': 'BATTLE ROYALE',
-      'prize': '1200 Diamonds',
-      'slots': '44/48',
-      'isFull': false,
+      'type': 'SOLO',
+      'entry': 'FREE',
+      'prize': '₹1,200',
+      'perKill': '₹25',
+      'totalSlots': 48,
+      'joinedSlots': 39,
+      'roomId': '9940124',
+      'roomPass': '1234',
+      'isJoined': false,
     },
     {
-      'title': 'Lone Wolf Sniper 1v1 High Stakes',
-      'id': '7731209',
-      'pass': '7777',
-      'map': 'Iron Cage',
-      'mode': '1V1 SNIPER',
-      'prize': 'Custom Title',
-      'slots': '2/2',
-      'isFull': true,
+      'id': '103',
+      'title': 'BGMI: ERANGEL PRO SQUAD WAR',
+      'game': 'BGMI',
+      'time': 'TOMORROW, 08:00 PM',
+      'map': 'Erangel',
+      'type': 'SQUAD',
+      'entry': 'FREE',
+      'prize': '₹2,500',
+      'perKill': '₹50',
+      'totalSlots': 100,
+      'joinedSlots': 82,
+      'roomId': '5510293',
+      'roomPass': '0000',
+      'isJoined': false,
     },
   ];
 
-  void _createRoomDialog() {
-    final titleCtrl = TextEditingController();
-    final idCtrl = TextEditingController();
-    final passCtrl = TextEditingController();
-    final prizeCtrl = TextEditingController(text: '300 Diamonds');
+  void _joinMatchDialog(Map<String, dynamic> match) {
+    final ignController = TextEditingController(text: widget.playerName);
+    final uidController = TextEditingController(text: widget.playerUid);
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF111322),
+      backgroundColor: const Color(0xFF131526),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -371,40 +341,43 @@ class _EsportsRoomScreenState extends State<EsportsRoomScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
-              children: const [
-                Icon(Icons.add_moderator, color: Color(0xFFFF0055)),
-                SizedBox(width: 8),
-                Text('HOST ESPORTS MATCH', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1.2)),
-              ],
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: titleCtrl,
-              decoration: const InputDecoration(hintText: 'Match Name (e.g. 4v4 CS Tournament)'),
-            ),
-            const SizedBox(height: 12),
-            Row(
               children: [
+                const Icon(Icons.shield, color: Color(0xFFFF0055)),
+                const SizedBox(width: 8),
                 Expanded(
-                  child: TextField(
-                    controller: idCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(hintText: 'Room ID'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    controller: passCtrl,
-                    decoration: const InputDecoration(hintText: 'Password'),
+                  child: Text(
+                    'REGISTER: ${match['type']}',
+                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1),
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 8),
+            Text(match['title'], style: const TextStyle(color: Colors.white70, fontSize: 13)),
+            const SizedBox(height: 18),
+            TextField(
+              controller: ignController,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color(0xFF1B1D34),
+                hintText: 'Game In-Game Name (IGN)',
+                prefixIcon: const Icon(Icons.person, color: Color(0xFF00E5FF)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+              ),
+            ),
             const SizedBox(height: 12),
             TextField(
-              controller: prizeCtrl,
-              decoration: const InputDecoration(hintText: 'Prize Pool (Optional)'),
+              controller: uidController,
+              keyboardType: TextInputType.number,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color(0xFF1B1D34),
+                hintText: 'Game UID',
+                prefixIcon: const Icon(Icons.numbers, color: Color(0xFFFF0055)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+              ),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
@@ -414,34 +387,21 @@ class _EsportsRoomScreenState extends State<EsportsRoomScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
               onPressed: () {
-                if (idCtrl.text.isNotEmpty) {
+                if (ignController.text.isNotEmpty && uidController.text.isNotEmpty) {
                   setState(() {
-                    _rooms.insert(0, {
-                      'title': titleCtrl.text.isEmpty ? 'Custom Match' : titleCtrl.text,
-                      'id': idCtrl.text,
-                      'pass': passCtrl.text.isEmpty ? 'None' : passCtrl.text,
-                      'map': 'Bermuda',
-                      'mode': 'CUSTOM SCRIM',
-                      'prize': prizeCtrl.text,
-                      'slots': '1/8',
-                      'isFull': false,
-                    });
+                    match['isJoined'] = true;
+                    match['joinedSlots'] = (match['joinedSlots'] as int) + 1;
                   });
-                  if (isFirebaseReady) {
-                    try {
-                      FirebaseFirestore.instance.collection('rooms').add({
-                        'title': titleCtrl.text,
-                        'id': idCtrl.text,
-                        'pass': passCtrl.text,
-                        'prize': prizeCtrl.text,
-                        'createdAt': FieldValue.serverTimestamp(),
-                      });
-                    } catch (_) {}
-                  }
                   Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      backgroundColor: Color(0xFF00E5FF),
+                      content: Text('Registration Confirmed! Room details unlocked below.', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                    ),
+                  );
                 }
               },
-              child: const Text('PUBLISH ROOM LIVE', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+              child: const Text('CONFIRM REGISTRATION (FREE)', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 1)),
             ),
           ],
         ),
@@ -451,168 +411,236 @@ class _EsportsRoomScreenState extends State<EsportsRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final filteredMatches = _matches.where((m) => m['game'] == _selectedGame).toList();
+
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            // Custom Header
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Z-GOD ARENA',
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: 2),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(colors: [Color(0xFFFF0055), Color(0xFFFF5E00)]),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.flash_on, color: Colors.white, size: 22),
                       ),
-                      SizedBox(height: 3),
-                      Text('Join Custom Rooms or Scrims', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Z-GOD ARENA', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+                          Text('HELLO, ${widget.playerName.toUpperCase()}', style: const TextStyle(color: Color(0xFF00E5FF), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                        ],
+                      ),
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFF0055).withOpacity(0.12),
+                      color: const Color(0xFF16182D),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFFF0055).withOpacity(0.4)),
+                      border: Border.all(color: Colors.white.withOpacity(0.08)),
                     ),
                     child: Row(
                       children: const [
-                        Icon(Icons.circle, size: 8, color: Color(0xFFFF0055)),
+                        Icon(Icons.monetization_on, color: Color(0xFFFFD700), size: 16),
                         SizedBox(width: 6),
-                        Text('LIVE MATCHES', style: TextStyle(color: Color(0xFFFF0055), fontWeight: FontWeight.w900, fontSize: 11)),
+                        Text('₹240', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Colors.white)),
                       ],
                     ),
                   )
                 ],
               ),
             ),
-            // Room Cards
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Row(
+                children: [
+                  _buildGameTab('FREE FIRE'),
+                  const SizedBox(width: 12),
+                  _buildGameTab('BGMI'),
+                ],
+              ),
+            ),
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                itemCount: _rooms.length,
-                itemBuilder: (context, index) {
-                  final room = _rooms[index];
+                padding: const EdgeInsets.all(16),
+                itemCount: filteredMatches.length,
+                itemBuilder: (context, i) {
+                  final match = filteredMatches[i];
+                  final double progress = (match['joinedSlots'] as int) / (match['totalSlots'] as int);
+
                   return Container(
-                    margin: const EdgeInsets.only(bottom: 14),
+                    margin: const EdgeInsets.only(bottom: 18),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF131526), Color(0xFF1A1D34)],
+                        colors: [Color(0xFF131526), Color(0xFF181A30)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: Colors.white.withOpacity(0.06)),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: match['isJoined'] ? const Color(0xFF00E5FF).withOpacity(0.6) : Colors.white.withOpacity(0.06),
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.4),
-                          blurRadius: 12,
+                          blurRadius: 14,
                           offset: const Offset(0, 4),
-                        )
+                        ),
                       ],
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF00E5FF).withOpacity(0.12),
+                                  color: const Color(0xFFFF0055).withOpacity(0.15),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  room['mode'],
-                                  style: const TextStyle(
-                                    color: Color(0xFF00E5FF),
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 1,
-                                  ),
+                                  match['time'],
+                                  style: const TextStyle(color: Color(0xFFFF0055), fontSize: 11, fontWeight: FontWeight.w900),
                                 ),
                               ),
-                              Row(
-                                children: [
-                                  const Icon(Icons.people_alt_outlined, size: 14, color: Colors.white54),
-                                  const SizedBox(width: 4),
-                                  Text(room['slots'], style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
-                                ],
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.06),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'MAP: ${match['map']}',
+                                  style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+                                ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 10),
-                          Text(
-                            room['title'],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            match['title'],
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white),
                           ),
-                          const SizedBox(height: 6),
-                          Row(
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0C0D17),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              const Icon(Icons.card_giftcard, size: 14, color: Color(0xFFFFD700)),
-                              const SizedBox(width: 5),
-                              Text('Prize: ${room['prize']}', style: const TextStyle(color: Color(0xFFFFD700), fontSize: 12, fontWeight: FontWeight.bold)),
-                              const SizedBox(width: 14),
-                              const Icon(Icons.map_outlined, size: 14, color: Colors.white38),
-                              const SizedBox(width: 4),
-                              Text(room['map'], style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                              _buildInfoItem('PRIZE POOL', match['prize'], const Color(0xFFFFD700)),
+                              _buildInfoItem('PER KILL', match['perKill'], const Color(0xFF00E5FF)),
+                              _buildInfoItem('ENTRY', match['entry'], const Color(0xFF00FF66)),
                             ],
                           ),
-                          const SizedBox(height: 14),
-                          // ID and Password Display Box
+                        ),
+                        const SizedBox(height: 14),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Spots Filled: ${match['joinedSlots']}/${match['totalSlots']}',
+                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white70),
+                                  ),
+                                  Text(
+                                    '${((1 - progress) * match['totalSlots']).toInt()} spots left',
+                                    style: const TextStyle(fontSize: 11, color: Color(0xFFFF0055), fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: LinearProgressIndicator(
+                                  value: progress,
+                                  minHeight: 6,
+                                  backgroundColor: Colors.white.withOpacity(0.08),
+                                  valueColor: const AlwaysStoppedAnimation(Color(0xFFFF0055)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        if (match['isJoined']) ...[
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            width: double.infinity,
+                            margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0B0C15),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.white.withOpacity(0.04)),
+                              color: const Color(0xFF00E5FF).withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.4)),
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.key, size: 16, color: Color(0xFFFF0055)),
+                                const Icon(Icons.vpn_key_rounded, color: Color(0xFF00E5FF), size: 20),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    'ID: ${room['id']}   |   Pass: ${room['pass']}',
-                                    style: const TextStyle(
-                                      fontFamily: 'monospace',
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                    ),
+                                    'ROOM ID: ${match['roomId']}  |  PASS: ${match['roomPass']}',
+                                    style: const TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.bold, fontSize: 13),
                                   ),
                                 ),
                                 InkWell(
                                   onTap: () {
-                                    Clipboard.setData(ClipboardData(text: "${room['id']}"));
+                                    Clipboard.setData(ClipboardData(text: "${match['roomId']}"));
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        backgroundColor: const Color(0xFF00E5FF),
-                                        content: Text('Room ID ${room['id']} Copied! Paste in Game.', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-                                      ),
+                                      SnackBar(content: Text('Room ID ${match['roomId']} Copied! Open Game to Join.')),
                                     );
                                   },
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                     decoration: BoxDecoration(
-                                      gradient: const LinearGradient(colors: [Color(0xFF00E5FF), Color(0xFF0088FF)]),
+                                      color: const Color(0xFF00E5FF),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: const Text('COPY', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 11)),
                                   ),
-                                )
+                                ),
                               ],
                             ),
-                          )
+                          ),
+                        ] else ...[
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFF0055),
+                                minimumSize: const Size(double.infinity, 48),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              onPressed: () => _joinMatchDialog(match),
+                              child: const Text('JOIN TOURNAMENT', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.2)),
+                            ),
+                          ),
                         ],
-                      ),
+                      ],
                     ),
                   );
                 },
@@ -621,196 +649,169 @@ class _EsportsRoomScreenState extends State<EsportsRoomScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFFFF0055),
-        elevation: 10,
-        onPressed: _createRoomDialog,
-        icon: const Icon(Icons.add_circle, color: Colors.white),
-        label: const Text('HOST MATCH', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
-      ),
     );
   }
-}
 
-/* ==========================================
-   4. TOURNAMENT FEED SCREEN
-   ========================================== */
-class TournamentFeedScreen extends StatelessWidget {
-  const TournamentFeedScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(18),
-          children: [
-            const Text(
-              'OFFICIAL TOURNAMENTS',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 1.5),
+  Widget _buildGameTab(String title) {
+    final isSelected = _selectedGame == title;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _selectedGame = title),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFFFF0055) : const Color(0xFF14162B),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: isSelected ? Colors.transparent : Colors.white.withOpacity(0.08)),
+          ),
+          child: Center(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: 13,
+                letterSpacing: 1,
+                color: isSelected ? Colors.white : Colors.white60,
+              ),
             ),
-            const SizedBox(height: 14),
-            // Featured Card
-            Container(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF1E102E), Color(0xFF12142B)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFFF0055).withOpacity(0.35)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFFF0055)),
-                          child: const Icon(Icons.emoji_events, size: 22, color: Colors.white),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text('Z-GOD MEGA CUP 2026', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
-                            Text('Weekly Esports Battle', style: TextStyle(color: Colors.white54, fontSize: 12)),
-                          ],
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Compete with top tier players. Custom Room credentials will be revealed 10 minutes before the match start time.',
-                      style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.black38,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
-                          Text('Prize Pool: ₹10,000 INR', style: TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.w900)),
-                          Text('Entry: FREE', style: TextStyle(color: Color(0xFFFF0055), fontWeight: FontWeight.w900)),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/* ==========================================
-   5. ESPORTS PROFILE SCREEN
-   ========================================== */
-class EsportsProfileScreen extends StatelessWidget {
-  final String userName;
-  const EsportsProfileScreen({super.key, required this.userName});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: 110,
-                    height: 110,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFFF0055), width: 3),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFF0055).withOpacity(0.45),
-                          blurRadius: 30,
-                          spreadRadius: 4,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const CircleAvatar(
-                    radius: 48,
-                    backgroundColor: Color(0xFF14172B),
-                    child: Icon(Icons.shield_outlined, size: 52, color: Color(0xFF00E5FF)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
-              Text(
-                userName,
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: 1.5),
-              ),
-              const SizedBox(height: 4),
-              const Text('RANK: GRANDMASTER TIER', style: TextStyle(color: Color(0xFFFF0055), fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1)),
-              const SizedBox(height: 28),
-              Row(
-                children: [
-                  Expanded(child: _buildStatBox('MATCHES', '128')),
-                  const SizedBox(width: 10),
-                  Expanded(child: _buildStatBox('WIN RATE', '74%')),
-                  const SizedBox(width: 10),
-                  Expanded(child: _buildStatBox('K/D', '5.4')),
-                ],
-              ),
-              const Spacer(),
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.06),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: TextButton.icon(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AuthScreen()),
-                    );
-                  },
-                  icon: const Icon(Icons.logout, color: Colors.white70),
-                  label: const Text('LOGOUT / CHANGE ACCOUNT', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildStatBox(String label, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF131526),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+  Widget _buildInfoItem(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(value, style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 14)),
+        const SizedBox(height: 2),
+        Text(label, style: const TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
+}
+
+/* ==========================================================================
+   4. MY MATCHES SCREEN
+   ========================================================================== */
+class MyMatchesScreen extends StatelessWidget {
+  const MyMatchesScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('MY REGISTERED MATCHES', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1)),
+        backgroundColor: const Color(0xFF0E101D),
+        elevation: 0,
       ),
-      child: Column(
-        children: [
-          Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF00E5FF))),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 10, color: Colors.white38, fontWeight: FontWeight.bold)),
-        ],
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.sports_esports_outlined, size: 64, color: Colors.white24),
+              SizedBox(height: 16),
+              Text('Your upcoming registered scrims appear here.', style: TextStyle(color: Colors.white54, fontSize: 14)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/* ==========================================================================
+   5. WALLET & LOGOUT SCREEN
+   ========================================================================== */
+class WalletProfileScreen extends StatelessWidget {
+  final String playerName;
+  final String playerUid;
+
+  const WalletProfileScreen({super.key, required this.playerName, required this.playerUid});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            const Text('PLAYER WALLET', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1E102E), Color(0xFF141731)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFFF0055).withOpacity(0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('TOTAL EARNINGS', style: TextStyle(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  const Text('₹240.00', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Color(0xFF00E5FF))),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFF0055),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Withdrawal feature enabled for UPI / Paytm!')),
+                            );
+                          },
+                          icon: const Icon(Icons.account_balance_wallet, size: 16),
+                          label: const Text('WITHDRAW', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text('PLAYER STATS', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: 1)),
+            const SizedBox(height: 12),
+            ListTile(
+              tileColor: const Color(0xFF131526),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              leading: const CircleAvatar(
+                backgroundColor: Color(0xFFFF0055),
+                child: Icon(Icons.person, color: Colors.white),
+              ),
+              title: Text(playerName, style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text('UID: $playerUid | Rank: Grandmaster', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+              trailing: const Icon(Icons.verified, color: Color(0xFF00E5FF)),
+            ),
+            const SizedBox(height: 30),
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFFFF0055)),
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const EsportsLoginScreen()),
+                );
+              },
+              icon: const Icon(Icons.logout, color: Color(0xFFFF0055)),
+              label: const Text('LOGOUT / CHANGE ACCOUNT', style: TextStyle(color: Color(0xFFFF0055), fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
       ),
     );
   }
