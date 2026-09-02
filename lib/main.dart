@@ -3,12 +3,15 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+bool isFirebaseReady = false;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await Firebase.initializeApp();
+    isFirebaseReady = true;
   } catch (e) {
-    debugPrint("Firebase init note: $e");
+    debugPrint("Firebase init deferred: $e");
   }
   runApp(const ZGodApp());
 }
@@ -22,38 +25,14 @@ class ZGodApp extends StatelessWidget {
       title: 'Z-GOD GAMING',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0F0F1E),
+        scaffoldBackgroundColor: const Color(0xFF0D0D1A),
         primaryColor: const Color(0xFFFF0055),
         colorScheme: const ColorScheme.dark(
           primary: Color(0xFFFF0055),
           secondary: Color(0xFF00E5FF),
         ),
       ),
-      home: const AuthGate(),
-    );
-  }
-}
-
-class AuthGate extends StatelessWidget {
-  const AuthGate({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(color: Color(0xFFFF0055)),
-            ),
-          );
-        }
-        if (snapshot.hasData && snapshot.data != null) {
-          return MainNavigationScreen(user: snapshot.data!);
-        }
-        return const LoginScreen();
-      },
+      home: const LoginScreen(),
     );
   }
 }
@@ -66,104 +45,109 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  bool _isLoading = false;
+  bool _loading = false;
 
-  Future<void> _signInAsGuest() async {
-    setState(() => _isLoading = true);
-    try {
-      await FirebaseAuth.instance.signInAnonymously();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login notice: $e')),
-        );
+  void _proceedToApp(String name) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MainNavigationScreen(userName: name),
+      ),
+    );
+  }
+
+  Future<void> _handleGuestLogin() async {
+    setState(() => _loading = true);
+    if (isFirebaseReady) {
+      try {
+        await FirebaseAuth.instance.signInAnonymously();
+      } catch (e) {
+        debugPrint("Auth notice: $e");
       }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+    }
+    if (mounted) {
+      setState(() => _loading = false);
+      _proceedToApp('Guest Gamer');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0D0D1A),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Center(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(22),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFFF0055), width: 3),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFF0055).withOpacity(0.4),
-                          blurRadius: 28,
-                          spreadRadius: 6,
-                        ),
-                      ],
-                    ),
-                    child: const Icon(Icons.sports_esports, size: 70, color: Color(0xFFFF0055)),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFFF0055), width: 3),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFF0055).withOpacity(0.4),
+                        blurRadius: 30,
+                        spreadRadius: 4,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Z-GOD GAMING',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2,
-                      color: Colors.white,
+                  child: const Icon(Icons.sports_esports, size: 68, color: Color(0xFFFF0055)),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Z-GOD GAMING',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2.5,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Esports Hub & Custom Rooms',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white60, fontSize: 14),
+                ),
+                const SizedBox(height: 48),
+                if (_loading)
+                  const CircularProgressIndicator(color: Color(0xFFFF0055))
+                else ...[
+                  ElevatedButton.icon(
+                    onPressed: _handleGuestLogin,
+                    icon: const Icon(Icons.flash_on, color: Colors.white),
+                    label: const Text(
+                      'PLAY AS GUEST',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF0055),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 54),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 6,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Esports Hub & Custom Rooms',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white60, fontSize: 14),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    onPressed: () => _proceedToApp('Google Member'),
+                    icon: const Icon(Icons.account_circle, size: 24, color: Color(0xFF00E5FF)),
+                    label: const Text(
+                      'SIGN IN WITH GOOGLE',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
+                      minimumSize: const Size(double.infinity, 54),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
                   ),
-                  const SizedBox(height: 48),
-                  if (_isLoading)
-                    const CircularProgressIndicator(color: Color(0xFFFF0055))
-                  else ...[
-                    ElevatedButton.icon(
-                      onPressed: _signInAsGuest,
-                      icon: const Icon(Icons.person, color: Colors.white),
-                      label: const Text(
-                        'PLAY AS GUEST',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF0055),
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size(double.infinity, 54),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    OutlinedButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Guest Login is fully active! Use Play As Guest.')),
-                        );
-                      },
-                      icon: const Icon(Icons.g_mobiledata, size: 28, color: Color(0xFF00E5FF)),
-                      label: const Text(
-                        'SIGN IN WITH GOOGLE',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
-                        minimumSize: const Size(double.infinity, 54),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                    ),
-                  ],
                 ],
-              ),
+              ],
             ),
           ),
         ),
@@ -173,8 +157,8 @@ class _LoginScreenState extends State<LoginScreen> {
 }
 
 class MainNavigationScreen extends StatefulWidget {
-  final User user;
-  const MainNavigationScreen({super.key, required this.user});
+  final String userName;
+  const MainNavigationScreen({super.key, required this.userName});
 
   @override
   State<MainNavigationScreen> createState() => _MainNavigationScreenState();
@@ -188,7 +172,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final pages = [
       const FeedScreen(),
       const CustomRoomScreen(),
-      ProfileScreen(user: widget.user),
+      ProfileScreen(userName: widget.userName),
     ];
 
     return Scaffold(
@@ -196,7 +180,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
-        backgroundColor: const Color(0xFF16162A),
+        backgroundColor: const Color(0xFF141424),
         selectedItemColor: const Color(0xFFFF0055),
         unselectedItemColor: Colors.white38,
         items: const [
@@ -217,7 +201,7 @@ class FeedScreen extends StatefulWidget {
 }
 
 class _FeedScreenState extends State<FeedScreen> {
-  int _likes = 128;
+  int _likes = 154;
   bool _isLiked = false;
 
   @override
@@ -225,13 +209,8 @@ class _FeedScreenState extends State<FeedScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Z-GOD FEED', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-        backgroundColor: const Color(0xFF16162A),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white70),
-            onPressed: () => FirebaseAuth.instance.signOut(),
-          ),
-        ],
+        backgroundColor: const Color(0xFF141424),
+        elevation: 0,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -256,7 +235,7 @@ class _FeedScreenState extends State<FeedScreen> {
                   ),
                   const SizedBox(height: 14),
                   const Text(
-                    'Welcome to Z-GOD Gaming Hub! Create custom rooms, connect with squads, and dominate the battlefield.',
+                    'Welcome to Z-GOD Gaming Hub! Create custom rooms, connect with squads, and dominate tournaments.',
                     style: TextStyle(color: Colors.white70, height: 1.4, fontSize: 15),
                   ),
                   const SizedBox(height: 16),
@@ -295,6 +274,11 @@ class CustomRoomScreen extends StatefulWidget {
 }
 
 class _CustomRoomScreenState extends State<CustomRoomScreen> {
+  final List<Map<String, String>> _localRooms = [
+    {'title': '4v4 Rush Match', 'id': '8849102', 'pass': '1234'},
+    {'title': 'Bermuda Clash Tournament', 'id': '9920145', 'pass': '0000'},
+  ];
+
   void _showCreateRoomSheet() {
     final titleController = TextEditingController();
     final idController = TextEditingController();
@@ -325,7 +309,7 @@ class _CustomRoomScreenState extends State<CustomRoomScreen> {
             const SizedBox(height: 14),
             TextField(
               controller: titleController,
-              decoration: const InputDecoration(labelText: 'Room Title (e.g. 4v4 Clash)'),
+              decoration: const InputDecoration(labelText: 'Room Title (e.g. 4v4 Rush)'),
             ),
             TextField(
               controller: idController,
@@ -339,15 +323,26 @@ class _CustomRoomScreenState extends State<CustomRoomScreen> {
             const SizedBox(height: 18),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFF0055)),
-              onPressed: () async {
+              onPressed: () {
                 if (idController.text.isNotEmpty) {
-                  await FirebaseFirestore.instance.collection('rooms').add({
-                    'title': titleController.text.isEmpty ? 'Custom Match' : titleController.text,
-                    'id': idController.text,
-                    'pass': passController.text.isEmpty ? 'None' : passController.text,
-                    'createdAt': FieldValue.serverTimestamp(),
+                  setState(() {
+                    _localRooms.insert(0, {
+                      'title': titleController.text.isEmpty ? 'Custom Match' : titleController.text,
+                      'id': idController.text,
+                      'pass': passController.text.isEmpty ? 'None' : passController.text,
+                    });
                   });
-                  if (mounted) Navigator.pop(ctx);
+                  if (isFirebaseReady) {
+                    try {
+                      FirebaseFirestore.instance.collection('rooms').add({
+                        'title': titleController.text.isEmpty ? 'Custom Match' : titleController.text,
+                        'id': idController.text,
+                        'pass': passController.text.isEmpty ? 'None' : passController.text,
+                        'createdAt': FieldValue.serverTimestamp(),
+                      });
+                    } catch (_) {}
+                  }
+                  Navigator.pop(ctx);
                 }
               },
               child: const Text('PUBLISH ROOM', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -363,58 +358,38 @@ class _CustomRoomScreenState extends State<CustomRoomScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('CUSTOM ROOMS', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-        backgroundColor: const Color(0xFF16162A),
+        backgroundColor: const Color(0xFF141424),
+        elevation: 0,
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('rooms').orderBy('createdAt', descending: true).snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.white60)));
-          }
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: Color(0xFFFF0055)));
-          }
-          final docs = snapshot.data?.docs ?? [];
-          if (docs.isEmpty) {
-            return const Center(
-              child: Text(
-                'No custom rooms yet!\nTap + to create one.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white54, fontSize: 16),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _localRooms.length,
+        itemBuilder: (context, i) {
+          final room = _localRooms[i];
+          return Card(
+            color: const Color(0xFF16162A),
+            margin: const EdgeInsets.only(bottom: 12),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              title: Text(room['title']!, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text('ID: ${room['id']}  |  Pass: ${room['pass']}', style: const TextStyle(color: Colors.white60)),
               ),
-            );
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: docs.length,
-            itemBuilder: (context, i) {
-              final data = docs[i].data() as Map<String, dynamic>;
-              return Card(
-                color: const Color(0xFF16162A),
-                margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  title: Text(data['title'] ?? 'Custom Match', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                  subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text('ID: ${data['id']}  |  Pass: ${data['pass'] ?? 'None'}', style: const TextStyle(color: Colors.white60)),
-                  ),
-                  trailing: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00E5FF),
-                      foregroundColor: Colors.black,
-                    ),
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Room ID ${data['id']} Copied! Open Game to Join.')),
-                      );
-                    },
-                    child: const Text('JOIN', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
+              trailing: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00E5FF),
+                  foregroundColor: Colors.black,
                 ),
-              );
-            },
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Copied Room ID: ${room['id']}!')),
+                  );
+                },
+                child: const Text('JOIN', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
           );
         },
       ),
@@ -429,15 +404,16 @@ class _CustomRoomScreenState extends State<CustomRoomScreen> {
 }
 
 class ProfileScreen extends StatelessWidget {
-  final User user;
-  const ProfileScreen({super.key, required this.user});
+  final String userName;
+  const ProfileScreen({super.key, required this.userName});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('GAMER PROFILE', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-        backgroundColor: const Color(0xFF16162A),
+        backgroundColor: const Color(0xFF141424),
+        elevation: 0,
       ),
       body: Center(
         child: Column(
@@ -457,15 +433,20 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              user.isAnonymous ? 'Guest Gamer' : (user.email ?? 'Z-GOD Member'),
+              userName,
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             const SizedBox(height: 6),
-            Text('UID: ${user.uid.substring(0, 8)}...', style: const TextStyle(color: Colors.white38)),
+            const Text('Level: Pro Gamer | Rank: Grandmaster', style: TextStyle(color: Colors.white60)),
             const SizedBox(height: 28),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFF0055)),
-              onPressed: () => FirebaseAuth.instance.signOut(),
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                );
+              },
               icon: const Icon(Icons.logout, color: Colors.white),
               label: const Text('LOGOUT', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
