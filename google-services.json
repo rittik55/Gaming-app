@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1072746624774",
+    "project_id": "z-god-43f71",
+    "storage_bucket": "z-god-43f71.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1072746624774:android:e963078d3d3783a956d087",
+        "android_client_info": {
+          "package_name": "com.zgod.gaming"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAHEo23mtBXeRW59PkmUQ4ucAtgTHdpCjQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
