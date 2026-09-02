@@ -25,9 +25,13 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Generate Android Structure & Repair
+      - name: Generate Android Structure & Place Firebase
         run: |
-          flutter create . --org com.gamingapp.zgod --platforms android
+          flutter create . --org com.zgod --platforms android
+          mkdir -p android/app
+          if [ -f "google-services.json" ]; then
+            cp google-services.json android/app/
+          fi
           flutter pub get
 
       - name: Build Release APK
